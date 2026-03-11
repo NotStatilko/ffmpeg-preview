@@ -1,0 +1,80 @@
+name: Build FFmpeg
+
+on:
+  push:
+    paths:
+      - ffmpeg_tag.txt
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -------------------------
+      # Linux dependencies
+      # -------------------------
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential pkg-config yasm nasm
+
+      # -------------------------
+      # macOS dependencies
+      # -------------------------
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install yasm nasm
+
+      # -------------------------
+      # Windows dependencies
+      # -------------------------
+      - name: Setup MSYS2
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          msystem: MINGW64
+          install: >-
+            git
+            make
+            yasm
+            nasm
+            mingw-w64-x86_64-gcc
+
+      # -------------------------
+      # Run build (Linux/macOS)
+      # -------------------------
+      - name: Build FFmpeg
+        if: runner.os != 'Windows'
+        run: |
+          chmod +x build.sh
+          ./build.sh
+
+      # -------------------------
+      # Run build (Windows)
+      # -------------------------
+      - name: Build FFmpeg (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: |
+          chmod +x build.sh
+          ./build.sh
+
+      # -------------------------
+      # Upload artifacts
+      # -------------------------
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffmpeg-${{ runner.os }}
+          path: artifact/
