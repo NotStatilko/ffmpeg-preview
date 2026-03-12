@@ -97,10 +97,10 @@ jobs:
             powershell -Command "Compress-Archive -LiteralPath @(Get-ChildItem release -File | ForEach-Object { \$_.FullName }) -DestinationPath $FILENAME -Force"
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
             FILENAME="ffmpeg-${VERSION}-macOS.zip"
-            zip -r "$FILENAME" release
+            (cd release && zip -r "../$FILENAME" .)
           else
             FILENAME="ffmpeg-${VERSION}-Linux.zip"
-            zip -r "$FILENAME" release
+            (cd release && zip -r "../$FILENAME" .)
           fi
 
           echo "PACKAGE=$FILENAME" >> $GITHUB_ENV
