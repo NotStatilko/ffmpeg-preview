@@ -45,7 +45,7 @@ COMMON_FLAGS=(
 
   --enable-static
   --disable-shared
-  --extra-version="-preview"
+  --extra-version="preview"
 )
 
 EXTRA_FLAGS=()
